@@ -15,8 +15,9 @@ def get_feature_columns(df):
     
     return feature_cols
 
-### train one fold (one train/validation split)
+### train one fold (one train/validation combo)
 def train_one_fold(train_df, val_df, feature_cols, val_season):
+    # train/val split
     X_train = train_df[feature_cols]
     y_train = train_df["winner"]
     X_val = val_df[feature_cols]
@@ -90,10 +91,30 @@ def main():
         # store results
         results.append((val_season, auc, acc))
     
-    avg_auc = np.mean([r[1] for r in results])
-    avg_acc = np.mean([r[2] for r in results])
-    print("avg_auc:", avg_auc)
-    print("avg_acc:", avg_acc)
+    print(results)
+
+    ## train final model on all completed seasons
+    train_df = df[df["season"].isin(completed_seasons)]
+    X_train = train_df[feature_cols]
+    y_train = train_df["winner"]
+    # class imbalance
+    neg = (y_train == 0).sum()
+    pos = (y_train == 1).sum()
+    scale = neg/pos if pos > 0 else 1.0
+    ## final model
+    final_model = XGBClassifier(
+        n_estimators = 300,
+        learning_rate = 0.05,
+        max_depth = 4,
+        subsample = 0.8,
+        colsample_bytree = 0.8,
+        objective = "binary:logistic",
+        scale_pos_weight = scale,
+        eval_metric = "logloss"
+    )
+    # fit model
+    final_model.fit(X_train, y_train)
+    final_model.save_model("output/final_model.json")
 
 if __name__ == "__main__":
     main()
