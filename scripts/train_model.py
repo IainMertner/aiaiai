@@ -50,7 +50,13 @@ def main():
     # load features
     features_df = pd.read_csv("output/features.csv")
     # identify completed seasons
-    completed_seasons = sorted(features_df["season"].unique())
+    completed_seasons = (
+        features_df.groupby("season")["gw"]
+        .max()
+        .loc[lambda s: s == 38]
+        .index
+        .tolist()
+    )
     print(completed_seasons)
 
 if __name__ == "__main__":

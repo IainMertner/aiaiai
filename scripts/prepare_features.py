@@ -52,8 +52,16 @@ def build_features(df, managers_df):
     df = df.merge(managers_df, on="manager", how="left")
 
     ### labels (did they win the season)
+    completed_seasons = (
+        df.groupby("season")["gw"]
+        .max()
+        .loc[lambda s: s == 38]
+        .index
+        .tolist()
+    )
     final_points = (
-        df.groupby(["season", "manager"])["total_points"]
+        df[df["season"].isin(completed_seasons)]
+        .groupby(["season", "manager"])["total_points"]
         .max()
         .reset_index()
     )
