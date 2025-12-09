@@ -43,13 +43,21 @@ def train_one_fold(train_df, val_df, feature_cols, val_season):
     # predictions
     preds_proba = model.predict_proba(X_val)[:, 1]
     preds = (preds_proba > 0.5).astype(int)
+    logits = model.predict(X_val, output_margin=True)
     # evaluation metrics
     auc = roc_auc_score(y_val, preds_proba)
     acc = accuracy_score(y_val, preds)
-    # save predictions
+    ## save predictions
     val_out = val_df.copy()
-    val_out["pred_proba"] = preds_proba
-    val_out = val_out.sort_values(["season", "gw", "pred_proba"], ascending=[True, True, False])
+    val_out["logit"] = logits
+    cols_to_keep = ["manager", "season", "gw", "total_points", "winner", "logit"]
+    val_out = val_out[cols_to_keep]
+    # probabilities
+    val_out["softmax_prob"] = (
+        val_out.groupby(["season", "gw"])["logit"]
+        .transform(lambda x: np.exp(x) / np.exp(x).sum())
+    )
+    val_out = val_out.sort_values(["season", "gw", "softmax_prob"], ascending=[True, True, False])
     save_path = f"output/val_predictions_season_{val_season}.csv"
     val_out.to_csv(save_path, index=False)
     
