@@ -65,19 +65,14 @@ def build_features(df, managers_df):
         df[df["season"].isin(completed_seasons)]
         .groupby(["season", "manager"])["total_points"]
         .max()
+        .rename("final_points")
         .reset_index()
     )
-    winners = final_points.loc[(
-        final_points.groupby("season")["total_points"]
-        .idxmax()
-    )]
-    winners["winner"] = 1
     df = df.merge(
-        winners[["season", "manager", "winner"]],
+        final_points,
         on=["season", "manager"],
         how="left",
     )
-    df["winner"] = df["winner"].fillna(0).astype(int)
 
     return df
 

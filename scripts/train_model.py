@@ -1,12 +1,12 @@
 import pandas as pd
-from xgboost import XGBClassifier
-from sklearn.metrics import roc_auc_score, accuracy_score
+from xgboost import XGBRegressor
+from sklearn.metrics import mean_absolute_error, r2_score
 import numpy as np
 
 ## get feature columns (all numeric columns except labels and identifiers)
 def get_feature_columns(df):
     drop_cols = [
-        "winner",
+        "final_points",
         "season",
         "manager"
     ]
@@ -18,51 +18,46 @@ def get_feature_columns(df):
 def train_one_fold(train_df, val_df, feature_cols, val_season):
     # train/val split
     X_train = train_df[feature_cols]
-    y_train = train_df["winner"]
+    y_train = train_df["final_points"]
     X_val = val_df[feature_cols]
-    y_val = val_df["winner"]
-
-    # class imbalance (many more non-winners than winners)
-    neg = (y_train == 0).sum()
-    pos = (y_train == 1).sum()
-    scale = neg/pos if pos > 0 else 1.0
+    y_val = val_df["final_points"]
 
     ## XGBoost model
-    model = XGBClassifier(
-        n_estimators = 300,
-        learning_rate = 0.05,
-        max_depth = 4,
+    model = XGBRegressor(
+        n_estimators = 500,
+        learning_rate = 0.03,
+        max_depth = 5,
         subsample = 0.8,
         colsample_bytree = 0.8,
-        objective = "binary:logistic",
-        scale_pos_weight = scale,
-        eval_metric = "logloss"
+        objective = "reg:squarederror",
+        eval_metric = "rmse"
     )
     # fit model
     model.fit(X_train, y_train)
-    # predictions
-    preds_proba = model.predict_proba(X_val)[:, 1]
-    preds = (preds_proba > 0.5).astype(int)
-    logits = model.predict(X_val, output_margin=True)
-    # evaluation metrics
-    auc = roc_auc_score(y_val, preds_proba)
-    acc = accuracy_score(y_val, preds)
+    # predict final points
+    preds = model.predict(X_val)
+    # eval metrics
+    mae = mean_absolute_error(y_val, preds)
+    r2 = r2_score(y_val, preds)
     ## save predictions
     val_out = val_df.copy()
-    val_out["logit"] = logits
-    cols_to_keep = ["manager", "season", "gw", "total_points", "winner", "logit"]
-    val_out = val_out[cols_to_keep]
-    # probabilities
-    val_out["win_prob"] = (
-        val_out.groupby(["season", "gw"])["logit"]
-        .transform(lambda x: np.exp(x - x.max()) / np.exp(x - x.max()).sum())
+    val_out["pred_final_points"] = preds
+    # predicted rank
+    val_out["pred_rank"]= (
+        val_out.groupby(["season", "gw"])["pred_final_points"]
+        .rank(ascending=False, method="min")
     )
-    val_out = val_out.sort_values(["season", "gw", "win_prob"], ascending=[True, True, False])
-    save_path = f"output/val_predictions_season_{val_season}.csv"
-    val_out.to_csv(save_path, index=False)
-    
+    # win probability
+    val_out["win_prob"] = (
+        val_out.groupby(["season", "gw"])["pred_final_points"]
+        .transform(lambda x: np.exp(x/50 - (x/50).max()) / np.exp(x/50 - (x/50).max()).sum())
+    )
+    # only save most important columns
+    cols_to_keep = ["manager", "season", "gw", "total_points", "final_points", "pred_final_points", "pred_rank", "win_prob"]
+    val_out = val_out[cols_to_keep].sort_values(["season", "gw", "pred_final_points"], ascending=[True, True, False])
+    val_out.to_csv(f"output/val_predictions_season_{val_season}.csv", index=False)
 
-    return model, auc, acc
+    return model, mae, r2
 
 def main():
     # load features
@@ -77,6 +72,7 @@ def main():
     )
     # get feature columns
     feature_cols = get_feature_columns(df)
+    print(feature_cols)
 
     results = []
     ## season-level cross-validation
@@ -86,30 +82,24 @@ def main():
         train_df = df[df["season"].isin(train_seasons)]
         val_df = df[df["season"] == val_season]
         # train model
-        model, auc, acc = train_one_fold(train_df, val_df, feature_cols, val_season)
+        model, mae, r2 = train_one_fold(train_df, val_df, feature_cols, val_season)
         # store results
-        results.append((val_season, auc, acc))
+        results.append((val_season, mae, r2))
     
     print(results)
 
     ## train final model on all completed seasons
     train_df = df[df["season"].isin(completed_seasons)]
     X_train = train_df[feature_cols]
-    y_train = train_df["winner"]
-    # class imbalance
-    neg = (y_train == 0).sum()
-    pos = (y_train == 1).sum()
-    scale = neg/pos if pos > 0 else 1.0
+    y_train = train_df["final_points"]
     ## final model
-    final_model = XGBClassifier(
-        n_estimators = 300,
-        learning_rate = 0.05,
-        max_depth = 4,
+    final_model = XGBRegressor(
+        n_estimators = 500,
+        learning_rate = 0.03,
+        max_depth = 5,
         subsample = 0.8,
         colsample_bytree = 0.8,
-        objective = "binary:logistic",
-        scale_pos_weight = scale,
-        eval_metric = "logloss"
+        objective = "reg:squarederror"
     )
     # fit model
     final_model.fit(X_train, y_train)
