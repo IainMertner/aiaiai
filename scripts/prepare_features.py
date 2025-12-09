@@ -48,8 +48,10 @@ def build_features(df, managers_df):
         .reset_index(level=[0,1], drop=True)
     )
     df["std_last5"] = df["std_last5"].fillna(0)
+    '''
     # merge manager-level data
     df = df.merge(managers_df, on="manager", how="left")
+    '''
 
     ### labels (did they win the season)
     completed_seasons = (
