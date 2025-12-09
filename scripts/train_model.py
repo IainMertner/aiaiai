@@ -7,7 +7,6 @@ import numpy as np
 def get_feature_columns(df):
     drop_cols = [
         "winner",
-        "num_wins",
         "season",
         "manager"
     ]
@@ -54,11 +53,11 @@ def train_one_fold(train_df, val_df, feature_cols, val_season):
     cols_to_keep = ["manager", "season", "gw", "total_points", "winner", "logit"]
     val_out = val_out[cols_to_keep]
     # probabilities
-    val_out["softmax_prob"] = (
+    val_out["win_prob"] = (
         val_out.groupby(["season", "gw"])["logit"]
-        .transform(lambda x: np.exp(x) / np.exp(x).sum())
+        .transform(lambda x: np.exp(x - x.max()) / np.exp(x - x.max()).sum())
     )
-    val_out = val_out.sort_values(["season", "gw", "softmax_prob"], ascending=[True, True, False])
+    val_out = val_out.sort_values(["season", "gw", "win_prob"], ascending=[True, True, False])
     save_path = f"output/val_predictions_season_{val_season}.csv"
     val_out.to_csv(save_path, index=False)
     
