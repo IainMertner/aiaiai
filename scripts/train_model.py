@@ -7,13 +7,16 @@ import numpy as np
 def get_feature_columns(df):
     drop_cols = [
         "winner",
+        "num_wins",
         "season",
         "manager"
     ]
     feature_cols = [col for col in df.columns if col not in drop_cols and np.issubdtype(df[col].dtype, np.number)]
+    
+    return feature_cols
 
 ### train one fold (one train/validation split)
-def train_one_fold(train_df, val_df, feature_cols):
+def train_one_fold(train_df, val_df, feature_cols, val_season):
     X_train = train_df[feature_cols]
     y_train = train_df["winner"]
     X_val = val_df[feature_cols]
@@ -43,21 +46,46 @@ def train_one_fold(train_df, val_df, feature_cols):
     # evaluation metrics
     auc = roc_auc_score(y_val, preds_proba)
     acc = accuracy_score(y_val, preds)
+    # save predictions
+    val_out = val_df.copy()
+    val_out["pred_proba"] = preds_proba
+    val_out = val_out.sort_values(["season", "gw", "pred_proba"], ascending=[True, True, False])
+    save_path = f"output/val_predictions_season_{val_season}.csv"
+    val_out.to_csv(save_path, index=False)
+    
 
     return model, auc, acc
 
 def main():
     # load features
-    features_df = pd.read_csv("output/features.csv")
+    df = pd.read_csv("output/features.csv")
     # identify completed seasons
     completed_seasons = (
-        features_df.groupby("season")["gw"]
+        df.groupby("season")["gw"]
         .max()
         .loc[lambda s: s == 38]
         .index
         .tolist()
     )
-    print(completed_seasons)
+    # get feature columns
+    feature_cols = get_feature_columns(df)
+
+    results = []
+    ## season-level cross-validation
+    for val_season in completed_seasons:
+        # split into training and validation sets
+        train_seasons = [season for season in completed_seasons if season != val_season]
+        train_df = df[df["season"].isin(train_seasons)]
+        val_df = df[df["season"] == val_season]
+        # train model
+        model, auc, acc = train_one_fold(train_df, val_df, feature_cols, val_season)
+        # store results
+        results.append((val_season, auc, acc))
+    
+    avg_auc = np.mean([r[1] for r in results])
+    avg_acc = np.mean([r[2] for r in results])
+    print("avg_auc:", avg_auc)
+    print("avg_acc:", avg_acc)
 
 if __name__ == "__main__":
     main()
