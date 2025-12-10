@@ -58,11 +58,11 @@ def train_one_fold(train_df, val_df, feature_cols, val_season):
     # only save most important columns
     cols_to_keep = ["manager", "season", "gw", "total_points", "pred_remaining_points", "final_points", "pred_final_points", "gw_rank", "pred_rank", "win_prob"]
     val_out = val_out[cols_to_keep].sort_values(["season", "gw", "pred_final_points"], ascending=[True, True, False])
-    val_out.to_csv(f"output/val_predictions_season_{val_season}.csv", index=False)
+    val_out.to_csv(f"output/predictions/val_predictions_season_{val_season}.csv", index=False)
 
     return model, mae, r2
 
-def main():
+def train_model():
     # load features
     df = pd.read_csv("output/features.csv")
     # identify completed seasons
@@ -75,7 +75,6 @@ def main():
     )
     # get feature columns
     feature_cols = get_feature_columns(df)
-    print(feature_cols)
 
     results = []
     ## season-level cross-validation
@@ -94,7 +93,7 @@ def main():
     ## train final model on all completed seasons
     train_df = df[df["season"].isin(completed_seasons)]
     X_train = train_df[feature_cols]
-    y_train = train_df["final_points"]
+    y_train = train_df["target_remaining_points"]
     ## final model
     final_model = XGBRegressor(
         n_estimators = 500,
@@ -107,6 +106,3 @@ def main():
     # fit model
     final_model.fit(X_train, y_train)
     final_model.save_model("output/final_model.json")
-
-if __name__ == "__main__":
-    main()

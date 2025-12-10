@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 
-### build features
-def build_features(df, managers_df):
+### prepare features
+def prepare_features(df, managers_df):
     # sort
     df = df.sort_values(["season", "manager", "gw"])
 
@@ -18,10 +18,10 @@ def build_features(df, managers_df):
         .astype(int)
     )
     # points behind first
-    df["points_behind_first"] = (
-        df.groupby(["season", "gw"])["total_points"]
-        .transform(lambda x: x.max() - x)
-    )
+    #df["points_behind_first"] = (
+    #    df.groupby(["season", "gw"])["total_points"]
+    #    .transform(lambda x: x.max() - x)
+    #)
     # deviation from gameweek mean
     df["gw_mean"] = (
         df.groupby(["season", "gw"])["gw_points"]
@@ -76,13 +76,3 @@ def build_features(df, managers_df):
     df["target_remaining_points"] = df["final_points"] - df["total_points"]
 
     return df
-
-def main():
-    points_df = pd.read_csv("raw/points.csv")
-    managers_df = pd.read_csv("raw/managers.csv")
-    
-    features = build_features(points_df, managers_df)
-    features.to_csv("output/features.csv", index=False)
-
-if __name__ == "__main__":
-    main()

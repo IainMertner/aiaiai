@@ -1,0 +1,31 @@
+import pandas as pd
+
+from scripts.prepare_features import prepare_features
+from scripts.train_model import train_model, get_feature_columns
+from scripts.predict_current import predict_current
+from scripts.explain_model import explain_model
+from scripts.plot_probs import plot_probs
+
+def main():
+    ### prepare features
+    points_df = pd.read_csv("raw/points.csv")
+    managers_df = pd.read_csv("raw/managers.csv")
+    
+    features = prepare_features(points_df, managers_df)
+    features.to_csv("output/features.csv", index=False)
+    feature_cols = get_feature_columns(features)
+
+    ### train model
+    train_model()
+
+    ### predict current season
+    predict_current(feature_cols)
+
+    ### explain model
+    explain_model(feature_cols)
+
+    ### plot win probabilities
+    plot_probs()
+
+if __name__ == "__main__":
+    main()

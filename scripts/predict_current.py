@@ -1,16 +1,14 @@
 import pandas as pd
 import numpy as np
 import xgboost as xgb
-from train_model import get_feature_columns
 
-def predict_current():
+def predict_current(feature_cols):
     # load model
     model = xgb.XGBRegressor()
     model.load_model("output/final_model.json")
     # load features
     df = pd.read_csv("output/features.csv")
     # get feature columns
-    feature_cols = get_feature_columns(df)
     # identify current season
     current_season = (
         df.groupby("season")["gw"]
@@ -38,10 +36,4 @@ def predict_current():
     # only save most important columns
     cols_to_keep = ["manager", "season", "gw", "total_points", "pred_remaining_points", "final_points", "pred_final_points", "gw_rank", "pred_rank", "win_prob"]
     df = df[cols_to_keep].sort_values(["season", "gw", "pred_final_points"], ascending=[True, True, False])
-    df.to_csv(f"output/predictions_current_season.csv", index=False)
-
-def main():
-    predict_current()
-
-if __name__ == "__main__":
-    main()
+    df.to_csv(f"output/predictions/predictions_current_season.csv", index=False)
