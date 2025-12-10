@@ -7,6 +7,7 @@ import numpy as np
 def get_feature_columns(df):
     drop_cols = [
         "final_points",
+        "target_remaining_points",
         "season",
         "manager"
     ]
@@ -18,9 +19,9 @@ def get_feature_columns(df):
 def train_one_fold(train_df, val_df, feature_cols, val_season):
     # train/val split
     X_train = train_df[feature_cols]
-    y_train = train_df["final_points"]
+    y_train = train_df["target_remaining_points"]
     X_val = val_df[feature_cols]
-    y_val = val_df["final_points"]
+    y_val = val_df["target_remaining_points"]
 
     ## XGBoost model
     model = XGBRegressor(
@@ -41,7 +42,9 @@ def train_one_fold(train_df, val_df, feature_cols, val_season):
     r2 = r2_score(y_val, preds)
     ## save predictions
     val_out = val_df.copy()
-    val_out["pred_final_points"] = preds
+    val_out["pred_remaining_points"] = preds
+    # predicted final points
+    val_out["pred_final_points"] = val_out["total_points"] + val_out["pred_remaining_points"]
     # predicted rank
     val_out["pred_rank"]= (
         val_out.groupby(["season", "gw"])["pred_final_points"]
@@ -53,7 +56,7 @@ def train_one_fold(train_df, val_df, feature_cols, val_season):
         .transform(lambda x: np.exp(x/50 - (x/50).max()) / np.exp(x/50 - (x/50).max()).sum())
     )
     # only save most important columns
-    cols_to_keep = ["manager", "season", "gw", "total_points", "final_points", "pred_final_points", "pred_rank", "win_prob"]
+    cols_to_keep = ["manager", "season", "gw", "total_points", "pred_remaining_points", "final_points", "pred_final_points", "gw_rank", "pred_rank", "win_prob"]
     val_out = val_out[cols_to_keep].sort_values(["season", "gw", "pred_final_points"], ascending=[True, True, False])
     val_out.to_csv(f"output/val_predictions_season_{val_season}.csv", index=False)
 
