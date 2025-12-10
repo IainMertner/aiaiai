@@ -11,23 +11,31 @@ def build_features(df, managers_df):
         df.groupby(["season", "manager"])["gw_points"]
         .cumsum()
     )
+    '''
     # gameweek rank
     df["gw_rank"] = (
         df.groupby(["season","gw"])["total_points"]
         .rank(method="min", ascending=False)
         .astype(int)
     )
+    '''
+    '''
     # points behind first
     df["points_behind_first"] = (
         df.groupby(["season", "gw"])["total_points"]
         .transform(lambda x: x.max() - x)
     )
+    '''
+    '''
     # deviation from gameweek mean
     df["gw_mean"] = (
         df.groupby(["season", "gw"])["gw_points"]
         .transform("mean")
     )
+    '''
+    '''
     df["gw_dev"] = df["gw_points"] - df["gw_mean"]
+    '''
     # rolling averages and standard deviations
     df["avg_last3"] = (
         df.groupby(["season", "manager"])["gw_points"]
