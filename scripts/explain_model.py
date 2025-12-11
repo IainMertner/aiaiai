@@ -29,9 +29,12 @@ def explain_model(feature_cols):
 
     # shap values
     explainer = shap.TreeExplainer(model)
-    shap_values = explainer.shap_values(X)
+    shap_values = explainer(X)
     plt.figure(figsize=(10, 8))
     shap.summary_plot(shap_values, X, show=False)
     plt.tight_layout()
     plt.savefig("output/plots/feature_importance_shap.png")
     plt.close()
+    plt.figure(figsize=(10,8))
+    shap.plots.waterfall(shap_values[0], max_display=20)
+    plt.tight_layout()

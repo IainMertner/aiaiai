@@ -11,7 +11,7 @@ def plot_probs():
     sns.lineplot(
         data=df,
         x="gw",
-        y="win_prob",
+        y="win_prob_bayes",
         hue="manager",
         palette="tab20",
         linewidth=2.5,
