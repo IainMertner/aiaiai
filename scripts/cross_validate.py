@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from scripts.utils.bayesian_shrinkage import apply_bayesian_shrinkage
+from scripts.utils.model_config import XGB_PARAMS
 
 ### train one fold (one train/validation combo)
 def train_one_fold(train_df, val_df, feature_cols, val_season, tau):
@@ -14,15 +15,7 @@ def train_one_fold(train_df, val_df, feature_cols, val_season, tau):
     y_val = val_df["target_remaining_points"]
 
     ## XGBoost model
-    model = XGBRegressor(
-        n_estimators = 500,
-        learning_rate = 0.03,
-        max_depth = 5,
-        subsample = 0.8,
-        colsample_bytree = 0.8,
-        objective = "reg:squarederror",
-        eval_metric = "rmse"
-    )
+    model = XGBRegressor(**XGB_PARAMS)
     # fit model
     model.fit(X_train, y_train)
     # predict final points

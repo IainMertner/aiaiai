@@ -35,6 +35,27 @@ def explain_model(feature_cols):
     plt.tight_layout()
     plt.savefig("output/plots/feature_importance_shap.png")
     plt.close()
-    plt.figure(figsize=(10,8))
-    shap.plots.waterfall(shap_values[0], max_display=20)
+    # individual row shap valuesidxs = [102, 162, 163, 164]
+    '''
+    idxs = [102, 162, 163, 164]
+    titles = [
+        "iain – GW13",
+        "nielsj – GW13",
+        "nielsj – GW14",
+        "nielsj – GW15"
+    ]
+
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+
+    for ax, idx, title in zip(axes.flatten(), idxs, titles):
+        plt.sca(ax)  # tell matplotlib "draw into this axis"
+        shap.plots.waterfall(
+            shap_values[idx],
+            max_display=10,
+            show=False
+        )
+        ax.set_title(title)
+
     plt.tight_layout()
+    plt.show()
+    '''

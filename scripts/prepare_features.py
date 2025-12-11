@@ -11,30 +11,25 @@ def prepare_features(df, managers_df):
         df.groupby(["season", "manager"])["gw_points"]
         .cumsum()
     )
-    # average points
-    df["avg_points"] = df["total_points"] / df["gw"]
     # gameweek rank
     df["gw_rank"] = (
         df.groupby(["season","gw"])["total_points"]
         .rank(method="min", ascending=False)
         .astype(int)
     )
-    '''
     # points behind first
     df["points_behind_first"] = (
         df.groupby(["season", "gw"])["total_points"]
         .transform(lambda x: x.max() - x)
     )
-    '''
-    '''
     # deviation from gameweek mean
     df["gw_mean"] = (
         df.groupby(["season", "gw"])["gw_points"]
         .transform("mean")
     )
     df["gw_dev"] = df["gw_points"] - df["gw_mean"]
-    '''
-    # rolling averages and standard deviations
+    # averages and standard deviations
+    df["avg_points"] = df["total_points"] / df["gw"]
     df["avg_last3"] = (
         df.groupby(["season", "manager"])["gw_points"]
         .rolling(3, min_periods=1)
@@ -47,19 +42,23 @@ def prepare_features(df, managers_df):
         .mean()
         .reset_index(level=[0,1], drop=True)
     )
-    df["std_last5"] = (
+    df["ewm"] = (
         df.groupby(["season", "manager"])["gw_points"]
-        .rolling(5, min_periods=1)
+        .transform(lambda x: x.ewm(span=5, adjust=False).mean())
+    )
+    df["avg_std"] = (
+        df.groupby(["season", "manager"])["gw_points"]
+        .expanding()
         .std()
         .reset_index(level=[0,1], drop=True)
     )
-    df["std_last5"] = df["std_last5"].fillna(0)
+    df["avg_std"] = df["avg_std"].fillna(0)
     '''
     # merge manager-level data
     df = df.merge(managers_df, on="manager", how="left")
     '''
 
-    ### labels (did they win the season)
+    ### labels
     completed_seasons = (
         df.groupby("season")["gw"]
         .max()

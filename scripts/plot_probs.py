@@ -6,16 +6,28 @@ import matplotlib.ticker as mtick
 def plot_probs():
     df = pd.read_csv("output/predictions/predictions_current_season.csv")
 
+    last_gw = df["gw"].max()
+
+    df_reordered = pd.concat([
+        df[df["gw"] == last_gw],   # seaborn sees these first → determines hue order
+        df[df["gw"] != last_gw]    # rest of the data
+    ], ignore_index=True)
+        
+    managers = sorted(df["manager"].unique())
+
+    palette = sns.color_palette("tab20", len(managers))
+    colour_map = dict(zip(managers, palette))
+
     sns.set_theme(style="whitegrid")
 
     sns.lineplot(
-        data=df,
+        data=df_reordered,
         x="gw",
         y="win_prob_bayes",
         hue="manager",
-        palette="tab20",
         linewidth=2.5,
         marker="o",
+        palette=colour_map,
         markersize=6
     )
 
