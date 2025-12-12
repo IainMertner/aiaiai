@@ -5,7 +5,8 @@ import numpy as np
 def prepare_features(df, managers_df):
     # sort
     df = df.sort_values(["season", "manager", "gw"])
-
+    # remaining gameweeks
+    df["remaining_gws"] = 38 - df["gw"]
     # cumulative points
     df["total_points"] = (
         df.groupby(["season", "manager"])["gw_points"]
@@ -42,7 +43,7 @@ def prepare_features(df, managers_df):
         .mean()
         .reset_index(level=[0,1], drop=True)
     )
-    df["ewm"] = (
+    df["ewm_l"] = (
         df.groupby(["season", "manager"])["gw_points"]
         .transform(lambda x: x.ewm(span=5, adjust=False).mean())
     )

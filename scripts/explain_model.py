@@ -37,11 +37,11 @@ def explain_model(feature_cols):
     plt.close()
     # individual row shap valuesidxs = [102, 162, 163, 164]
     '''
-    idxs = [102, 162, 163, 164]
+    idxs = [102, 162, 87, 164]
     titles = [
         "iain – GW13",
         "nielsj – GW13",
-        "nielsj – GW14",
+        "george – GW13",
         "nielsj – GW15"
     ]
 

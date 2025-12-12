@@ -17,7 +17,7 @@ def main():
     features.to_csv("output/features.csv", index=False)
     feature_cols = get_feature_columns(features)
 
-    tau = 75
+    tau = 100
 
     ### cross-validate
     cross_validate(feature_cols, tau)
