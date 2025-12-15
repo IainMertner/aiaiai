@@ -29,7 +29,7 @@ def prepare_features(df, managers_df):
         .transform("mean")
     )
     df["gw_dev"] = df["gw_points"] - df["gw_mean"]
-    # averages and standard deviations
+    ## averages and standard deviations
     df["avg_points"] = df["total_points"] / df["gw"]
     df["avg_last3"] = (
         df.groupby(["season", "manager"])["gw_points"]
@@ -58,7 +58,6 @@ def prepare_features(df, managers_df):
     # merge manager-level data
     df = df.merge(managers_df, on="manager", how="left")
     '''
-
     ### labels
     completed_seasons = (
         df.groupby("season")["gw"]

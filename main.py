@@ -7,6 +7,7 @@ from scripts.train_model import train_model
 from scripts.predict_current import predict_current
 from scripts.explain_model import explain_model
 from scripts.plot_probs import plot_probs
+from scripts.estimate_sigma import mad_sigma, estimate_sigma
 
 def main():
     ### prepare features
@@ -24,6 +25,9 @@ def main():
 
     ### train model
     train_model(feature_cols)
+
+    ### estimate sigma
+    estimate_sigma()
 
     ### predict current season
     predict_current(feature_cols, tau)

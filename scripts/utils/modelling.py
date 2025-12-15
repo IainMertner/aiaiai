@@ -11,7 +11,9 @@ OUTPUT_COLS = [
     "season",
     "gw",
     "total_points",
+    "target_remaining_points",
     "pred_remaining_points",
+    "residuals",
     "final_points",
     "pred_final_points",
     "gw_rank",
@@ -43,15 +45,16 @@ def evaluate(model, df, feature_cols):
 # Postprocess predictions to compute final points, ranks, and win probabilities
 def postprocess_predictions(df, preds, tau):
     out = df.copy()
-
+    # Add predictions to the output DataFrame
     out["pred_remaining_points"] = preds
+    out["residuals"] = out["target_remaining_points"] - out["pred_remaining_points"]
     out["pred_final_points"] = out["total_points"] + out["pred_remaining_points"]
-
+    # Compute ranks based on actual and predicted final points
     out["pred_rank"] = (
         out.groupby(["season", "gw"])["pred_final_points"]
         .rank(ascending=False, method="min")
     )
-
+    # Compute win probabilities using softmax
     out["win_prob"] = (
         out.groupby(["season", "gw"])["pred_final_points"]
         .transform(
@@ -59,9 +62,9 @@ def postprocess_predictions(df, preds, tau):
             / np.exp(x / tau - (x / tau).max()).sum()
         )
     )
-
+    # Apply Bayesian shrinkage to win probabilities
     out = apply_bayesian_shrinkage(out)
-
+    # Return only the relevant output columns, sorted appropriately
     return (
         out[OUTPUT_COLS]
         .sort_values(["season", "gw", "pred_final_points"],
