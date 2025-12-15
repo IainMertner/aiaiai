@@ -2,7 +2,7 @@ import pandas as pd
 
 from scripts.utils.modelling import train_xgb
 
-
+# Train final model on all completed seasons and save it
 def train_model(feature_cols):
     df = pd.read_csv("output/features.csv")
 

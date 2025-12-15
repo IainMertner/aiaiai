@@ -5,7 +5,7 @@ from sklearn.metrics import mean_absolute_error, r2_score
 from scripts.utils.bayesian_shrinkage import apply_bayesian_shrinkage
 from scripts.utils.model_config import XGB_PARAMS
 
-
+# Define output columns for predictions
 OUTPUT_COLS = [
     "manager",
     "season",
@@ -19,7 +19,7 @@ OUTPUT_COLS = [
     "win_prob_bayes",
 ]
 
-
+# Train an XGBoost model
 def train_xgb(df, feature_cols):
     X = df[feature_cols]
     y = df["target_remaining_points"]
@@ -29,7 +29,7 @@ def train_xgb(df, feature_cols):
 
     return model
 
-
+# Evaluate the model and return predictions, MAE, and R2 score
 def evaluate(model, df, feature_cols):
     X = df[feature_cols]
     y = df["target_remaining_points"]
@@ -40,7 +40,7 @@ def evaluate(model, df, feature_cols):
 
     return preds, mae, r2
 
-
+# Postprocess predictions to compute final points, ranks, and win probabilities
 def postprocess_predictions(df, preds, tau):
     out = df.copy()
 
