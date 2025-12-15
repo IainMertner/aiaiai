@@ -1,55 +1,11 @@
-from xgboost import XGBRegressor
-from sklearn.metrics import mean_absolute_error, r2_score
-import numpy as np
 import pandas as pd
 
-from scripts.utils.bayesian_shrinkage import apply_bayesian_shrinkage
-from scripts.utils.model_config import XGB_PARAMS
+from scripts.utils.modelling import train_xgb, evaluate, postprocess_predictions
 
-### train one fold (one train/validation combo)
-def train_one_fold(train_df, val_df, feature_cols, val_season, tau):
-    # train/val split
-    X_train = train_df[feature_cols]
-    y_train = train_df["target_remaining_points"]
-    X_val = val_df[feature_cols]
-    y_val = val_df["target_remaining_points"]
-
-    ## XGBoost model
-    model = XGBRegressor(**XGB_PARAMS)
-    # fit model
-    model.fit(X_train, y_train)
-    # predict final points
-    preds = model.predict(X_val)
-    # eval metrics
-    mae = mean_absolute_error(y_val, preds)
-    r2 = r2_score(y_val, preds)
-    ## save predictions
-    val_out = val_df.copy()
-    val_out["pred_remaining_points"] = preds
-    # predicted final points
-    val_out["pred_final_points"] = val_out["total_points"] + val_out["pred_remaining_points"]
-    # predicted rank
-    val_out["pred_rank"]= (
-        val_out.groupby(["season", "gw"])["pred_final_points"]
-        .rank(ascending=False, method="min")
-    )
-    # win probability
-    val_out["win_prob"] = (
-        val_out.groupby(["season", "gw"])["pred_final_points"]
-        .transform(lambda x: np.exp(x/tau - (x/tau).max()) / np.exp(x/tau - (x/tau).max()).sum())
-    )
-    val_out = apply_bayesian_shrinkage(val_out)
-    # only save most important columns
-    cols_to_keep = ["manager", "season", "gw", "total_points", "pred_remaining_points", "final_points", "pred_final_points", "gw_rank", "pred_rank", "win_prob_bayes"]
-    val_out = val_out[cols_to_keep].sort_values(["season", "gw", "pred_final_points"], ascending=[True, True, False])
-    val_out.to_csv(f"output/predictions/val_predictions_season_{val_season}.csv", index=False)
-
-    return model, mae, r2
 
 def cross_validate(feature_cols, tau):
-    # load features
     df = pd.read_csv("output/features.csv")
-    # identify completed seasons
+
     completed_seasons = (
         df.groupby("season")["gw"]
         .max()
@@ -59,14 +15,23 @@ def cross_validate(feature_cols, tau):
     )
 
     results = []
-    ## season-level cross-validation
+
     for val_season in completed_seasons:
-        # split into training and validation sets
-        train_seasons = [season for season in completed_seasons if season != val_season]
-        train_df = df[df["season"].isin(train_seasons)]
+        train_df = df[
+            (df["season"] != val_season) &
+            (df["season"].isin(completed_seasons))
+        ]
         val_df = df[df["season"] == val_season]
-        # train model
-        model, mae, r2 = train_one_fold(train_df, val_df, feature_cols, val_season, tau)
-        # store results
+
+        model = train_xgb(train_df, feature_cols)
+        preds, mae, r2 = evaluate(model, val_df, feature_cols)
+
+        val_out = postprocess_predictions(val_df, preds, tau)
+        val_out.to_csv(
+            f"output/predictions/val_predictions_season_{val_season}.csv",
+            index=False,
+        )
+
         results.append((val_season, mae, r2))
+
     print(results)

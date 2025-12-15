@@ -1,41 +1,29 @@
 import pandas as pd
-import numpy as np
 import xgboost as xgb
 
-from scripts.utils.bayesian_shrinkage import apply_bayesian_shrinkage
+from scripts.utils.modelling import postprocess_predictions
+
 
 def predict_current(feature_cols, tau):
-    # load model
     model = xgb.XGBRegressor()
     model.load_model("output/final_model.json")
-    # load features
+
     df = pd.read_csv("output/features.csv")
-    # identify current season
-    current_season = (
+
+    current_seasons = (
         df.groupby("season")["gw"]
         .max()
         .loc[lambda s: s < 38]
         .index
         .tolist()
     )
-    df = df[df["season"].isin(current_season)]
-    # predict remaining points
+
+    df = df[df["season"].isin(current_seasons)]
+
     preds = model.predict(df[feature_cols])
-    df["pred_remaining_points"] = preds
-    # predicted final points
-    df["pred_final_points"] = df["total_points"] + df["pred_remaining_points"]
-    # predicted rank
-    df["pred_rank"]= (
-        df.groupby(["season", "gw"])["pred_final_points"]
-        .rank(ascending=False, method="min")
+
+    out = postprocess_predictions(df, preds, tau)
+    out.to_csv(
+        "output/predictions/predictions_current_season.csv",
+        index=False,
     )
-    # win probability
-    df["win_prob"] = (
-        df.groupby(["season", "gw"])["pred_final_points"]
-        .transform(lambda x: np.exp(x/tau - (x/tau).max()) / np.exp(x/tau - (x/tau).max()).sum())
-    )
-    df = apply_bayesian_shrinkage(df)
-    # only save most important columns
-    cols_to_keep = ["manager", "season", "gw", "total_points", "pred_remaining_points", "final_points", "pred_final_points", "gw_rank", "pred_rank", "win_prob_bayes"]
-    df = df[cols_to_keep].sort_values(["season", "gw", "pred_final_points"], ascending=[True, True, False])
-    df.to_csv(f"output/predictions/predictions_current_season.csv", index=False)
