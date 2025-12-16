@@ -23,7 +23,7 @@ def plot_probs():
     sns.lineplot(
         data=df_reordered,
         x="gw",
-        y="win_prob_bayes",
+        y="win_probs",
         hue="manager",
         linewidth=2.5,
         marker="o",

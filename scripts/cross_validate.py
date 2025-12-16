@@ -28,7 +28,7 @@ def cross_validate(feature_cols, tau):
         model = train_xgb(train_df, feature_cols)
         preds, mae, r2 = evaluate(model, val_df, feature_cols)
         # Postprocess and save validation predictions
-        val_out = postprocess_predictions(val_df, preds, tau)
+        val_out = postprocess_predictions(val_df, preds)
         val_out.to_csv(
             f"output/predictions/val_predictions_season_{val_season}.csv",
             index=False,

@@ -17,8 +17,7 @@ OUTPUT_COLS = [
     "final_points",
     "pred_final_points",
     "gw_rank",
-    "pred_rank",
-    "win_prob_bayes",
+    "pred_rank"
 ]
 
 # Train an XGBoost model
@@ -43,7 +42,7 @@ def evaluate(model, df, feature_cols):
     return preds, mae, r2
 
 # Postprocess predictions to compute final points, ranks, and win probabilities
-def postprocess_predictions(df, preds, tau):
+def postprocess_predictions(df, preds):
     out = df.copy()
     # Add predictions to the output DataFrame
     out["pred_remaining_points"] = preds
@@ -54,16 +53,6 @@ def postprocess_predictions(df, preds, tau):
         out.groupby(["season", "gw"])["pred_final_points"]
         .rank(ascending=False, method="min")
     )
-    # Compute win probabilities using softmax
-    out["win_prob"] = (
-        out.groupby(["season", "gw"])["pred_final_points"]
-        .transform(
-            lambda x: np.exp(x / tau - (x / tau).max())
-            / np.exp(x / tau - (x / tau).max()).sum()
-        )
-    )
-    # Apply Bayesian shrinkage to win probabilities
-    out = apply_bayesian_shrinkage(out)
     # Return only the relevant output columns, sorted appropriately
     return (
         out[OUTPUT_COLS]

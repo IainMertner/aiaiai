@@ -8,6 +8,7 @@ from scripts.predict_current import predict_current
 from scripts.explain_model import explain_model
 from scripts.plot_probs import plot_probs
 from scripts.estimate_sigma import mad_sigma, estimate_sigma
+from scripts.simulate_win_probs import get_gw_sigma, simulate_win_probs
 
 def main():
     ### prepare features
