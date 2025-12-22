@@ -19,10 +19,8 @@ def main():
     features.to_csv("output/features.csv", index=False)
     feature_cols = get_feature_columns(features)
 
-    tau = 100
-
     ### cross-validate
-    cross_validate(feature_cols, tau)
+    cross_validate(feature_cols)
 
     ### train model
     train_model(feature_cols)
@@ -31,7 +29,8 @@ def main():
     estimate_sigma()
 
     ### predict current season
-    predict_current(feature_cols, tau)
+    n_sims = 1000000
+    predict_current(feature_cols, n_sims)
 
     ### explain model
     explain_model(feature_cols)

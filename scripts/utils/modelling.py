@@ -2,7 +2,6 @@ import numpy as np
 from xgboost import XGBRegressor
 from sklearn.metrics import mean_absolute_error, r2_score
 
-from scripts.utils.bayesian_shrinkage import apply_bayesian_shrinkage
 from scripts.utils.model_config import XGB_PARAMS
 
 # Define output columns for predictions

@@ -15,7 +15,7 @@ OUTPUT_COLS = [
 ]
 
 # Predict current season using the trained model
-def predict_current(feature_cols, tau):
+def predict_current(feature_cols, n_sims):
     model = xgb.XGBRegressor()
     model.load_model("output/final_model.json")
 
@@ -34,7 +34,7 @@ def predict_current(feature_cols, tau):
     preds = model.predict(df[feature_cols])
     df["pred_remaining_points"] = preds
 
-    df = simulate_win_probs(df)
+    df = simulate_win_probs(df, n_sims)
     df = (
         df[OUTPUT_COLS]
         .sort_values(["season", "gw", "win_probs"], 

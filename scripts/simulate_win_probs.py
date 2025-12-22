@@ -22,7 +22,7 @@ def get_gw_sigma(gw):
 
     return sigma
 
-def simulate_win_probs(df, n_sims=100000, dof=6):
+def simulate_win_probs(df, n_sims, dof=6):
     out = []
 
     for gw, gdf in df.groupby("gw"):

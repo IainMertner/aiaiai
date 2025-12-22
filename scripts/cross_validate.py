@@ -3,7 +3,7 @@ import pandas as pd
 from scripts.utils.modelling import train_xgb, evaluate, postprocess_predictions
 
 # Cross-validate the model across completed seasons
-def cross_validate(feature_cols, tau):
+def cross_validate(feature_cols):
     df = pd.read_csv("output/features.csv")
 
     completed_seasons = (
