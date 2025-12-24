@@ -3,8 +3,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 
+from scripts.utils.resource_path import resource_path
+
 def plot_probs():
-    df = pd.read_csv("output/predictions/predictions_current_season.csv")
+    df = pd.read_csv(resource_path("output/predictions/predictions_current_season.csv"))
 
     last_gw = df["gw"].max()
 
@@ -38,5 +40,5 @@ def plot_probs():
     plt.ylabel("Win Probability", fontsize=12)
     plt.legend(bbox_to_anchor=(1.01, 1), loc='upper left', borderaxespad=0, title="Manager")
     plt.tight_layout()
-    plt.savefig("output/plots/win_probs_current_season.png")
+    plt.savefig(resource_path("output/plots/win_probs_current_season.png"))
     plt.close()

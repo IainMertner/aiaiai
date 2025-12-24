@@ -1,10 +1,11 @@
 import pandas as pd
 
 from scripts.utils.modelling import train_xgb
+from scripts.utils.resource_path import resource_path
 
 # Train final model on all completed seasons and save it
 def train_model(feature_cols):
-    df = pd.read_csv("output/features.csv")
+    df = pd.read_csv(resource_path("output/features.csv"))
 
     completed_seasons = (
         df.groupby("season")["gw"]
@@ -17,4 +18,4 @@ def train_model(feature_cols):
     train_df = df[df["season"].isin(completed_seasons)]
 
     model = train_xgb(train_df, feature_cols)
-    model.save_model("output/final_model.json")
+    model.save_model(resource_path("output/final_model.json"))

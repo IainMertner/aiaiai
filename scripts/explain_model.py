@@ -3,12 +3,14 @@ import xgboost as xgb
 import matplotlib.pyplot as plt
 import shap
 
+from scripts.utils.resource_path import resource_path
+
 def explain_model(feature_cols):
     # load model
     model = xgb.XGBRegressor()
-    model.load_model("output/final_model.json")
+    model.load_model(resource_path("output/final_model.json"))
     # load data
-    df = pd.read_csv("output/features.csv")
+    df = pd.read_csv(resource_path("output/features.csv"))
     # identify current season
     current_season = (
         df.groupby("season")["gw"]
@@ -24,7 +26,7 @@ def explain_model(feature_cols):
     plt.figure(figsize=(10,8))
     xgb.plot_importance(model, importance_type="gain", max_num_features=15, height=0.5)
     plt.tight_layout()
-    plt.savefig("output/plots/feature_importance.png")
+    plt.savefig(resource_path("output/plots/feature_importance.png"))
     plt.close()
 
     # shap values
@@ -33,7 +35,7 @@ def explain_model(feature_cols):
     plt.figure(figsize=(10, 8))
     shap.summary_plot(shap_values, X, show=False)
     plt.tight_layout()
-    plt.savefig("output/plots/feature_importance_shap.png")
+    plt.savefig(resource_path("output/plots/feature_importance_shap.png"))
     plt.close()
     # individual row shap valuesidxs = [102, 162, 163, 164]
     '''

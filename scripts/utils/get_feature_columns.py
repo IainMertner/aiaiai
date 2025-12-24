@@ -1,5 +1,3 @@
-import numpy as np
-
 ## get feature columns (all numeric columns except labels and identifiers)
 def get_feature_columns(df):
     cols = [

@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+from scripts.utils.resource_path import resource_path
+
 def mad_sigma(x):
     med = np.median(x)
     mad = np.median(np.abs(x - med))
@@ -8,9 +10,9 @@ def mad_sigma(x):
 
 def estimate_sigma():
     df = pd.concat([
-        pd.read_csv("output/predictions/val_predictions_season_2022.csv"),
-        pd.read_csv("output/predictions/val_predictions_season_2023.csv"),
-        pd.read_csv("output/predictions/val_predictions_season_2024.csv"),
+        pd.read_csv(resource_path("output/predictions/val_predictions_season_2022.csv")),
+        pd.read_csv(resource_path("output/predictions/val_predictions_season_2023.csv")),
+        pd.read_csv(resource_path("output/predictions/val_predictions_season_2024.csv")),
     ], ignore_index=True)
 
     bins = [1, 7, 13, 19, 25, 31, 35, 39]
@@ -47,4 +49,4 @@ def estimate_sigma():
         .mean()
     )
 
-    sigma_by_bin.to_csv("output/sigma_by_gw_bin.csv", index=False)
+    sigma_by_bin.to_csv(resource_path("output/sigma_by_gw_bin.csv"), index=False)

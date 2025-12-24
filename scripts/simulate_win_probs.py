@@ -2,8 +2,10 @@ import pandas as pd
 import numpy as np
 from scipy.stats import t
 
+from scripts.utils.resource_path import resource_path
+
 def get_gw_sigma(gw):
-    sigma_df = pd.read_csv("output/sigma_by_gw_bin.csv")
+    sigma_df = pd.read_csv(resource_path("output/sigma_by_gw_bin.csv"))
 
     if gw < 7:
         sigma = sigma_df.loc[sigma_df["gw_bin"] == "1-6", "sigma_smoothed"].iloc[0]

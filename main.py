@@ -9,14 +9,15 @@ from scripts.explain_model import explain_model
 from scripts.plot_probs import plot_probs
 from scripts.estimate_sigma import mad_sigma, estimate_sigma
 from scripts.simulate_win_probs import get_gw_sigma, simulate_win_probs
+from scripts.utils.resource_path import resource_path
 
 def main():
     ### prepare features
-    points_df = pd.read_csv("raw/points.csv")
-    managers_df = pd.read_csv("raw/managers.csv")
+    points_df = pd.read_csv(resource_path("raw/points.csv"))
+    managers_df = pd.read_csv(resource_path("raw/managers.csv"))
     
     features = prepare_features(points_df, managers_df)
-    features.to_csv("output/features.csv", index=False)
+    features.to_csv(resource_path("output/features.csv"), index=False)
     feature_cols = get_feature_columns(features)
 
     ### cross-validate

@@ -3,6 +3,8 @@ import xgboost as xgb
 
 from scripts.simulate_win_probs import simulate_win_probs
 
+from scripts.utils.resource_path import resource_path
+
 # Define output columns for predictions
 OUTPUT_COLS = [
     "manager",
@@ -17,9 +19,9 @@ OUTPUT_COLS = [
 # Predict current season using the trained model
 def predict_current(feature_cols, n_sims):
     model = xgb.XGBRegressor()
-    model.load_model("output/final_model.json")
+    model.load_model(resource_path("output/final_model.json"))
 
-    df = pd.read_csv("output/features.csv")
+    df = pd.read_csv(resource_path("output/features.csv"))
 
     current_seasons = (
         df.groupby("season")["gw"]
@@ -42,6 +44,6 @@ def predict_current(feature_cols, n_sims):
     )
     
     df.to_csv(
-        f"output/predictions/predictions_current_season.csv",
+        resource_path(f"output/predictions/predictions_current_season.csv"),
         index=False,
     )

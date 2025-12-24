@@ -1,10 +1,11 @@
 import pandas as pd
 
 from scripts.utils.modelling import train_xgb, evaluate, postprocess_predictions
+from scripts.utils.resource_path import resource_path
 
 # Cross-validate the model across completed seasons
 def cross_validate(feature_cols):
-    df = pd.read_csv("output/features.csv")
+    df = pd.read_csv(resource_path("output/features.csv"))
 
     completed_seasons = (
         df.groupby("season")["gw"]
@@ -30,7 +31,7 @@ def cross_validate(feature_cols):
         # Postprocess and save validation predictions
         val_out = postprocess_predictions(val_df, preds)
         val_out.to_csv(
-            f"output/predictions/val_predictions_season_{val_season}.csv",
+            resource_path(f"output/predictions/val_predictions_season_{val_season}.csv"),
             index=False,
         )
 
