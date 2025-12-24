@@ -45,7 +45,7 @@ def prepare_features(df, managers_df):
     )
     df["ewm_l"] = (
         df.groupby(["season", "manager"])["gw_points"]
-        .transform(lambda x: x.ewm(span=5, adjust=False).mean())
+        .transform(lambda x: x.ewm(span=6, adjust=False).mean())
     )
     df["avg_std"] = (
         df.groupby(["season", "manager"])["gw_points"]

@@ -22,11 +22,12 @@ def get_gw_sigma(gw):
 
     return sigma
 
-def simulate_win_probs(df, n_sims, dof=6):
+def simulate_win_probs(df, n_sims):
     out = []
 
     for gw, gdf in df.groupby("gw"):
         sigma = get_gw_sigma(gw)
+        dof = 6 + 3*gw
 
         managers = gdf["manager"].values
         points = gdf["total_points"].values
