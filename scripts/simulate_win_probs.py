@@ -23,11 +23,8 @@ def get_gw_sigma(gw):
     return sigma
 
 def simulate_win_probs(df, n_sims):
-    out = []
-
     for gw, gdf in df.groupby("gw"):
         sigma = get_gw_sigma(gw)
-        dof = 6 + 3*gw
 
         managers = gdf["manager"].values
         points = gdf["total_points"].values
@@ -36,13 +33,14 @@ def simulate_win_probs(df, n_sims):
         idx = gdf.index.values
 
         n_managers = len(managers)
-        wins = np.zeros(n_managers)
 
-        for _ in range(n_sims):
-            remaining = mu + sigma * t.rvs(df=dof, size=n_managers)
-            final_points = points + remaining
-            wins[np.argmax(final_points)] += 1
+        remaining = mu[:, None] + sigma * np.random.normal(size=(n_managers, n_sims))
+        final_points = points[:, None] + remaining
+        winners = np.argmax(final_points, axis=0)
+        wins = np.bincount(winners, minlength=n_managers)
 
         df.loc[idx, "win_probs"] = wins / n_sims
+
+        print("Gameweek", gw, "simulated")
     
     return df
