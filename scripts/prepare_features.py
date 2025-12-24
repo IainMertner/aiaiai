@@ -54,6 +54,8 @@ def prepare_features(df, managers_df):
         .reset_index(level=[0,1], drop=True)
     )
     df["avg_std"] = df["avg_std"].fillna(0)
+    df["cv"] = df["avg_std"]/df["avg_points"]
+    df["cv"] = df["cv"].fillna(0)
     '''
     # merge manager-level data
     df = df.merge(managers_df, on="manager", how="left")

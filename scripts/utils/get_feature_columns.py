@@ -5,8 +5,8 @@ def get_feature_columns(df):
     cols = [
         "remaining_gws",
         "avg_points",
-        "avg_std",
+        "cv",
         "ewm_l"
     ]
-    feature_cols = [col for col in df.columns if col in cols]
+    feature_cols = [col for col in cols if col in df.columns]
     return feature_cols

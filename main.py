@@ -29,7 +29,7 @@ def main():
     estimate_sigma()
 
     ### predict current season
-    n_sims = 1000000
+    n_sims = 10000
     predict_current(feature_cols, n_sims)
 
     ### explain model
