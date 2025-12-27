@@ -1,4 +1,5 @@
 XGB_PARAMS = {
+    "n_jobs": 1,
     "n_estimators": 300,
     "learning_rate": 0.08,
     "max_depth": 3,

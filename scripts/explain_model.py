@@ -8,7 +8,7 @@ from scripts.utils.resource_path import resource_path
 def explain_model(feature_cols):
     # load model
     model = xgb.XGBRegressor()
-    model.load_model(resource_path("output/final_model.json"))
+    model.load_model(resource_path("output/models/model_0.json"))
     # load data
     df = pd.read_csv(resource_path("output/features.csv"))
     # identify current season

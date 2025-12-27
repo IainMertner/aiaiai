@@ -17,5 +17,8 @@ def train_model(feature_cols):
 
     train_df = df[df["season"].isin(completed_seasons)]
 
-    model = train_xgb(train_df, feature_cols)
-    model.save_model(resource_path("output/final_model.json"))
+    ensemble = train_xgb(train_df, feature_cols)
+    for i, model in enumerate(ensemble.models):
+        model.save_model(resource_path(f"output/models/model_{i}.json"))
+
+    return ensemble

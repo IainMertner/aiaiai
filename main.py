@@ -24,14 +24,14 @@ def main():
     cross_validate(feature_cols)
 
     ### train model
-    train_model(feature_cols)
+    ensemble = train_model(feature_cols)
 
     ### estimate sigma
     estimate_sigma()
 
     ### predict current season
     n_sims = 1000000
-    predict_current(feature_cols, n_sims)
+    predict_current(ensemble, feature_cols, n_sims)
 
     ### explain model
     explain_model(feature_cols)

@@ -4,6 +4,14 @@ from sklearn.metrics import mean_absolute_error, r2_score
 
 from scripts.utils.model_config import XGB_PARAMS
 
+class XGBEnsemble:
+    def __init__(self, models):
+        self.models = models
+
+    def predict(self, X):
+        preds = np.stack([model.predict(X) for model in self.models])
+        return preds.mean(axis=0)
+
 # Define output columns for predictions
 OUTPUT_COLS = [
     "manager",
@@ -24,17 +32,26 @@ def train_xgb(df, feature_cols):
     X = df[feature_cols]
     y = df["target_remaining_points"]
 
-    model = XGBRegressor(**XGB_PARAMS)
-    model.fit(X, y)
+    models = []
+    SEEDS = [seed for seed in range(0,10)]
+    for seed in SEEDS:
+        params = XGB_PARAMS.copy()
+        params["random_state"] = seed
 
-    return model
+        model = XGBRegressor(**params)
+        model.fit(X, y)
+        models.append(model)
+    
+    ensemble = XGBEnsemble(models)
+
+    return ensemble
 
 # Evaluate the model and return predictions, MAE, and R2 score
-def evaluate(model, df, feature_cols):
+def evaluate(ensemble, df, feature_cols):
     X = df[feature_cols]
     y = df["target_remaining_points"]
 
-    preds = model.predict(X)
+    preds = ensemble.predict(X)
     mae = mean_absolute_error(y, preds)
     r2 = r2_score(y, preds)
 
