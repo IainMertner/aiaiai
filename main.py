@@ -23,6 +23,7 @@ def main():
     ### cross-validate
     cross_validate(feature_cols)
 
+    print("Training models")
     ### train model
     ensemble = train_model(feature_cols)
 
