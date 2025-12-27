@@ -33,7 +33,7 @@ def train_xgb(df, feature_cols):
     y = df["target_remaining_points"]
 
     models = []
-    SEEDS = [seed for seed in range(0,10)]
+    SEEDS = [seed for seed in range(0,50)]
     for seed in SEEDS:
         params = XGB_PARAMS.copy()
         params["random_state"] = seed
