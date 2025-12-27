@@ -33,7 +33,7 @@ def plot_probs():
         markersize=6
     )
 
-    plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+    plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0, decimals=0))
     plt.gca().xaxis.set_major_locator(mtick.MaxNLocator(integer=True))
     plt.title("FPL Title Race: Win Probability Over Time", fontsize=18, fontweight='bold', pad=20)
     plt.xlabel("Gameweek", fontsize=12)
