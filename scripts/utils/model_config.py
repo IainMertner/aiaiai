@@ -10,5 +10,5 @@ XGB_PARAMS = {
     "reg_lambda": 2.0,
     "objective": "reg:squarederror",
     "eval_metric": "rmse",
-    "monotone_constraints": "(1, 1, 0, 0)"
+    "monotone_constraints": "(1, 1, 0, 1)"
 }
